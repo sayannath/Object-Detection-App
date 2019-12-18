@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
+//import 'package:image/image.dart' as img;
 
 void main() => runApp(MyApp());
 
@@ -38,7 +38,7 @@ class _TfliteHomeState extends State<TfliteHome> {
   List _recognitions;
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     _busy = true;
 
@@ -160,6 +160,74 @@ class _TfliteHomeState extends State<TfliteHome> {
     }).toList();
   }
 
+  Future openCamera() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    // setState(() {
+    //   _image = image;
+    // });
+    if (image == null) return;
+    setState(() {
+      _busy = true;
+    });
+    predictImage(image);
+  }
+
+  Future openGallery() async {
+    var picture = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    // setState(() {
+    //   _image = picture;
+    // });
+    if (picture == null) return;
+    setState(() {
+      _busy = true;
+    });
+    predictImage(picture);
+  }
+
+  Future<void> _optionsDialogBox() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: new BorderRadius.circular(30.0),
+            ),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  GestureDetector(
+                    child: Text(
+                      'Take a Picture',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                    onTap: openCamera,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(10.0),
+                  ),
+                  GestureDetector(
+                    child: Text(
+                      'Choose from Gallery',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                    onTap: openGallery,
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -170,7 +238,7 @@ class _TfliteHomeState extends State<TfliteHome> {
       top: 0.0,
       left: 0.0,
       width: size.width,
-      child: _image == null ? Text('No Image Selected') : Image.file(_image),
+      child: _image == null ? Center(child: Text('No Image Selected')) : Image.file(_image),
     ));
 
     stackChildren.addAll(renderBoxes(size));
@@ -189,9 +257,9 @@ class _TfliteHomeState extends State<TfliteHome> {
         backgroundColor: Colors.black,
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.image),
-        tooltip: "Pick Image from gallery",
-        onPressed: selectFromImagePicker,
+        child: Icon(Icons.add_a_photo),
+        tooltip: "Pick Image",
+        onPressed: _optionsDialogBox,
       ),
       body: Stack(
         children: stackChildren,
